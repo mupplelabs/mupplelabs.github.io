@@ -18,9 +18,7 @@ instagram_username: mupplelabs
 #########################################################################################
 ######### Nothing below needs to be changed (unless you know what you're doing) #########
 #########################################################################################
-#theme: "minima"
-remote_theme: "jekyll/minima@1e8a445"
-
+theme: "minima"
 
 rss: rss
 
