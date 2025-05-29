@@ -7,26 +7,6 @@
 #
 layout: home
 ---
-
-<div align="center">
-  
-<pre>
-                                  ___           ___             __                
-                                 /\_ \         /\_ \           /\ \               
-  ___ ___   __  __  _____   _____\//\ \      __\//\ \      __  \ \ \____    ____  
-/' __` __`\/\ \/\ \/\ '__`\/\ '__`\\ \ \   /'__`\\ \ \   /'__`\ \ \ '__`\  /',__\ 
-/\ \/\ \/\ \ \ \_\ \ \ \L\ \ \ \L\ \\_\ \_/\  __/ \_\ \_/\ \L\.\_\ \ \L\ \/\__, `\
-\ \_\ \_\ \_\ \____/\ \ ,__/\ \ ,__//\____\ \____\/\____\ \__/.\_\\ \_,__/\/\____/
- \/_/\/_/\/_/\/___/  \ \ \/  \ \ \/ \/____/\/____/\/____/\/__/\/_/ \/___/  \/___/ 
-                      \ \_\   \ \_\                                               
-                       \/_/    \/_/                                               
-
-</pre>
+<div align=center>
+<img src="{{site.url}}/images/The_men_who_stare_at_clusters.svg" style="display: block; margin: auto;" />
 </div>
-
-Hello World! Welcome to my little corner of the internet...
-- I’m interested in cycling, bicycles, music, electronics, computer programming, data science,
-  movies, reading, drawing, writing, printing and arts in general...
-- I love taking objects from virtuality into reality using CNC Machines, 3D Printers and Lasers... and an assorted collection of handtools
-- My week days I spend working in the computer storage industry architecting mass data storage solutions that scale 100s of PBs
-- This is the space where I am collecting my random musings of various subject.
