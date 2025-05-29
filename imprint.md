@@ -1,10 +1,8 @@
 ---
 layout: page
-title: impressum
-permalink: /impressum/
+title: Impressum
+permalink: /imprint/
 ---
-# Impressum
-
 * Angaben gemäß § 5 TMG<br>Stephan Esche<br>ändelstraße 27<br>63743 Aschaffenburg<br><br>Telefon: +49 (0) 6028 3079524<br>Email: info@mupples.de
 * Verantwortlichkeit
   Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:<br>
