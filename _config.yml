@@ -7,15 +7,14 @@ description: "Random musings of an aging nerd." # This will show up in places li
 #email: "example@mail.com"
 #twitter_username: "twitteruser"
 github_username: mupplelabs
-linkedin_username: stephan-esche-5517a78
+linkedin_username: stephan-esche
 #facebook_username: username
 #flickr_username: username
 instagram_username: mupplelabs
 #pinterest_username: username
 #youtube_username: username
 #googleplus_username: +username
-nav-pages: 
-  - impressum.md
+
 #########################################################################################
 ######### Nothing below needs to be changed (unless you know what you're doing) #########
 #########################################################################################
@@ -41,3 +40,8 @@ defaults:
       type: post
     values:
       tags: Other
+minima:
+  nav-pages: 
+   - impressum.md
+  skin:
+    - dark
