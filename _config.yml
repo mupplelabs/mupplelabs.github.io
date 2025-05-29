@@ -18,7 +18,7 @@ instagram_username: @mupplelabs
 #########################################################################################
 ######### Nothing below needs to be changed (unless you know what you're doing) #########
 #########################################################################################
-theme: "minima"
+theme: "tactile"
 
 rss: rss
 
