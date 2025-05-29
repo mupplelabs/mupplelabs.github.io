@@ -40,8 +40,8 @@ defaults:
       type: post
     values:
       tags: Other
+      
 minima:
   nav-pages: 
    - impressum.md
-  skin:
-    - dark
+  skin: dark
