@@ -18,7 +18,9 @@ instagram_username: mupplelabs
 #########################################################################################
 ######### Nothing below needs to be changed (unless you know what you're doing) #########
 #########################################################################################
-remote_theme: "minima"
+#theme: "minima"
+remote_theme: "jekyll/minima@1e8a445"
+
 
 rss: rss
 
@@ -40,8 +42,3 @@ defaults:
       type: post
     values:
       tags: Other
-      
-minima:
-  nav-pages: 
-   - impressum.md
-  skin: dark
