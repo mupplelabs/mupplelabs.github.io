@@ -14,7 +14,8 @@ instagram_username: mupplelabs
 #pinterest_username: username
 #youtube_username: username
 #googleplus_username: +username
-
+nav-pages: 
+  - impressum.md
 #########################################################################################
 ######### Nothing below needs to be changed (unless you know what you're doing) #########
 #########################################################################################
@@ -24,7 +25,7 @@ rss: rss
 
 kramdown:
   syntax_highlighter_opts:
-    disable: true
+    disable: false
     
 plugins:
   - jekyll-feed
