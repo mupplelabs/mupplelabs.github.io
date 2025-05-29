@@ -1,6 +1,6 @@
 <div align="center">
   
-```
+<pre>
                                   ___           ___             __                
                                  /\_ \         /\_ \           /\ \               
   ___ ___   __  __  _____   _____\//\ \      __\//\ \      __  \ \ \____    ____  
@@ -11,7 +11,7 @@
                       \ \_\   \ \_\                                               
                        \/_/    \/_/                                               
 
-```
+</pre>
 </div>
 
 Hello World! Welcome to my little corner of the internet...
