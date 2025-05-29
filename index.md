@@ -1,3 +1,5 @@
+<div align="center">
+  
 ```
                                   ___           ___             __                
                                  /\_ \         /\_ \           /\ \               
@@ -10,6 +12,8 @@
                        \/_/    \/_/                                               
 
 ```
+</div>
+
 Hello World! Welcome to my little corner of the internet...
 - I’m interested in cycling, bicycles, music, electronics, computer programming, data science,
   movies, reading, drawing, writing, printing and arts in general...
