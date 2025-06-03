@@ -1,5 +1,48 @@
-# OneFS SmartSync
-## Backup to object
+# OneFS 9.11 SmartSync  
+
+OneFS SmartSync provides mechanisms to replicate and copy data between Dell PowerScale systems and cloud object storage. By supporting file-to-object replication, SmartSync enables incremental data transfer and preserves metadata during the backup process. This allows for efficient, policy-driven protection and archiving of unstructured data across on-premises and cloud environments, leveraging the scalability of OneFS and cloud storage integration.
+
+<div align=center>
+<img src=https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png></img></div>
+
+OneFS SmartSync is designed for scenarios that involve moving or protecting file data in Dell PowerScale environments. The main use cases include:
+
+- Backing up from PowerScale to cloud object storage (such as ECS and AWS S3), supporting file-to-object replication for large unstructured data sets while retaining metadata and access controls.
+
+- Disaster Recovery across sites or clouds by enabling data replication between PowerScale clusters (file-to-file) and from clusters to object storage (file-to-object), supporting multi-copy data distribution and reducing recovery times, especially in cascaded DR topologies.
+
+- Data migration and mobility across locations (data centers, clouds, regions) with both push and pull policies, allowing flexible scheduling and minimizing source resource impact during large-scale data movement.
+
+- Efficient periodic backup between PowerScale clusters using incremental replication (repeat-copy policies), so only changed data is transferred—this reduces bandwidth and operational overhead. Very similar to synciq.
+
+- Preservation of file-level metadata and access controls (NTFS/Posix ACLs, streams, xattrs as well as timestamps) during replication, suitable for environments with regulatory or application-specific requirements.
+
+- Full data copy capabilities for systems using CloudPools tiering, ensuring both hot and cold (tiered-to-cloud) data are included in replicas and backups.
+
+- Policy-driven automation for complex or repeated protection and migration workflows, including support for chaining policies and decoupling snapshot creation from data movement.
+
+**Key limitations:** SmartSync does not support automatic failover/failback, post-replication write access at the target, or compliance mode clusters. Incremental copy (repeat-copy) is only available for file-to-file replication and file-to-object with the new dataset type "FILE_ON_OBJECT_BACKUP". File-to-object with default dataset type "FILE" always performs a full dataset copy. 
+
+In this article we are going to explore the "Backup to Object" feature as intrtoducd with OneFS 9.11 in April 2025. We'll cover from inital setup, exploring a number of basic operations, from backup over dataset browsing to restore.
+
+**Feature integration:**
+- **cloudpools**: SmartSync ALWAYS performs a ***deep copy*** for dataset creation of data tiered with CloudPools. Deep copy is a process that retrieves all data that is tiered to a cloud provider on the source cluster, allowing all the data to be replicated to the target cluster.
+- **SmartLock / WORM** SmartSync is NOT Smartlock aware, as such it doesnt takes retention times along. Replication into an existing worm domain on a target cluster works however data will not be commited. Using auto commit to do so is potentially dangerous as data might still be comming in, might cause the smartsync job to fail.
+- **SmartQuotas** SmartSync is not quota domain aware, however it can copy data into a quota domain on a target system but cannot carry quota information along. Also it doesn't check the quota boundaries if quota domains differ between clusters and the target runs out of space the dm job will fail.
+
+**More information on SmartSync can be found:**
+- [SmartSync File to Object Replication Intro](https://infohub.delltechnologies.com/en-us/p/onefs-9-11-smartsync-file-to-object-replication-gets-major-upgrades/)
+- [SmartSync Whitepaper](https://infohub.delltechnologies.com/en-us/t/dell-powerscale-smartsync/)
+
+
+## Playing with Backup to object
+### Pre-requirements:
+- one or better two PowerScale Simulators (Virtual Machines) running OneFS 9.11
+- as a cloud provider we're using the ECS Testdrive. 
+- Register and explore S3 on ObjectScale formerly known as ECS here:
+https://portal.ecstestdrive.com/
+
+## Setting it all up
 
 1. **Create and install certificates** => Create CA and identity per dm Peer!
    ```bash
@@ -183,7 +226,7 @@
     #### Full restore from a given dataset:
 
     ```bash
-    isi dm policies create RestoreFromECS\
+    isi dm policies create RestoreFromECS \
     --priority=NORMAL \
     --enabled=true \
     --policy-type=COPY \
@@ -200,7 +243,7 @@
     with the option ```copy-source-subpaths``` it's possible to specify a single file or folder in the source dataset to be retrieved. Contrary to the ```download``` option in ```isi_dm browse``` this restores the file including the original security descriptor.
 
     ```bash
-    isi dm policies create SingleFileRestore\
+    isi dm policies create SingleFileRestore \
     --priority=NORMAL \
     --enabled=true \
     --policy-type=COPY \
