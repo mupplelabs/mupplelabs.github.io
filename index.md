@@ -7,6 +7,4 @@
 #
 layout: home
 ---
-<div align=center>
-<img src="{{site.url}}/images/The_men_who_stare_at_clusters.svg" style="display: block; margin: auto;" />
-</div>
+
