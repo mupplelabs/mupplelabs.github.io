@@ -1,9 +1,11 @@
 # OneFS 9.11 SmartSync  
 
 OneFS SmartSync provides mechanisms to replicate and copy data between Dell PowerScale systems and cloud object storage. By supporting file-to-object replication, SmartSync enables incremental data transfer and preserves metadata during the backup process. This allows for efficient, policy-driven protection and archiving of unstructured data across on-premises and cloud environments, leveraging the scalability of OneFS and cloud storage integration.
-
 <div align=center>
-<img src=https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png></img></div>
+
+[![Backup to Object](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)
+
+</div>
 
 OneFS SmartSync is designed for scenarios that involve moving or protecting file data in Dell PowerScale environments. The main use cases include:
 
@@ -75,7 +77,7 @@ https://portal.ecstestdrive.com/
 4. **Create a copy policy** (a linked policy to be precise)
 
    ```bash
-   isi dm policies create Backup2ECS --priority=NORMAL --enabled=true --policy-type=REPEAT_COPY --parent-exec-policy-id=1 --repeat-copy-source-base-path=[dm_source]]t --repeat-copy-base-base-account-id=local --repeat-copy-base-source-account-id=local --repeat-copy-base-new-tasks-account=local --repeat-copy-base-target-account-id=[Cloud Account ID] --repeat-copy-base-target-base-path=[target_path] --repeat-copy-base-target-dataset-type=FILE_ON_OBJECT_BACKUP --repeat-copy-base-dataset-retention-period=12000 --repeat-copy-base-dataset-reserve=10 --repeat-copy-base-policy-dataset-expiry-action=DELETE --start-time="2025-05-29 10:20:00"
+   isi dm policies create Backup2ECS --priority=NORMAL --enabled=true --policy-type=REPEAT_COPY --parent-exec-policy-id=1 --repeat-copy-source-base-path=[dm_source] --repeat-copy-base-base-account-id=local --repeat-copy-base-source-account-id=local --repeat-copy-base-new-tasks-account=local --repeat-copy-base-target-account-id=[Cloud Account ID] --repeat-copy-base-target-base-path=[target_path] --repeat-copy-base-target-dataset-type=FILE_ON_OBJECT_BACKUP --repeat-copy-base-dataset-retention-period=12000 --repeat-copy-base-dataset-reserve=10 --repeat-copy-base-policy-dataset-expiry-action=DELETE --start-time="2025-05-29 10:20:00"
    ```
 
 5. **Create a clean up policy for local datasets aging**
@@ -90,7 +92,7 @@ https://portal.ecstestdrive.com/
    ```bash
    isi dm policies modify --run-now=true 1
    ```
-7. **Make it reoccuring by updating the dataset creation policy**
+7. **Make it reoccurring by updating the dataset creation policy**
    uses Cron like expression:<br>
    ```<seconds> <minutes> <hours> <day-of-month> <month> <day-of-week> <year>```
    
@@ -267,12 +269,12 @@ https://portal.ecstestdrive.com/
     2. Browse and download from remote datasets
 
     ***Usecases:***<br>
-    1. Cyber: Golden Copy to a Vault: no administation on the source system, only visible artefact are the datasets created. <br>Local cluster does not manage the replication and cannot compromise the replicated data.
+    1. Cyber: Golden Copy to a Vault: no administration on the source system, only visible artefact are the datasets created. <br>Local cluster does not manage the replication and cannot compromise the replicated data.
     2. Data distribution / collaboration:
         - multiple clusters connect to each other
         - datasets created locally 
         - each cluster can pull or download data on demand
-        - critical data can be distrubuted to all systems. 
+        - critical data can be distributed to all systems. 
 
     ### Access from or with a 2nd Cluster
 
