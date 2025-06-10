@@ -114,6 +114,7 @@ https://portal.ecstestdrive.com/
    2. ```isi_dm browse``` starts an interactive cli that allows searching accessing the existing "backup sets" and to download individual files.
    3. create a copy policy to restore data
 
+
    #### Backup Listing 
     ```bash
     # isi_dm object list --account-id [ECS Account ID] --target-type=backup --basepath portableOneFS    
@@ -146,6 +147,7 @@ https://portal.ecstestdrive.com/
     The above basicaly allows to retrieve the data structure, however it only shows the latest version of the dataset.
 
     #### Browsing and downloading
+   
     The interactive ```isi_dm browse``` cli facility allows to switch between accounts and dataset. Access the backed up metadata and to download individual files or folders.
 
     **Note:** ```help``` gives a list of available commands.
