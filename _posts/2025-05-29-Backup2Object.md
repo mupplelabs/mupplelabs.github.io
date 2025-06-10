@@ -221,13 +221,14 @@ https://portal.ecstestdrive.com/
         backup2cloud:3 <portableOneFS:> $
         ```
 
-    ### Restore from Cloud
+   ### Restore from Cloud
+   
     The data can be restored from the same cluster or a different cluster pointing to the same cloud account.
 
     Data can be pulled in via a COPY policy. Note a copy policy can only be run once!
     The target directory must be empty, if it doesn't exist the process does create it.
 
-    #### Full restore from a given dataset:
+   #### Full restore from a given dataset:
 
     ```bash
     isi dm policies create RestoreFromECS \
@@ -243,7 +244,8 @@ https://portal.ecstestdrive.com/
     --copy-base-target-dataset-type=FILE \
     --start-time="2025-05-29 10:20:00"
     ```
-    #### Single File Restore
+   #### Single File Restore
+   
     with the option ```copy-source-subpaths``` it's possible to specify a single file or folder in the source dataset to be retrieved. Contrary to the ```download``` option in ```isi_dm browse``` this restores the file including the original security descriptor.
 
     ```bash
@@ -262,7 +264,8 @@ https://portal.ecstestdrive.com/
     --start-time="2025-05-29 10:20:00"
     ```
     
-    ### PowerScale to PowerScale DM Communications
+   ### PowerScale to PowerScale DM Communications
+   
     Create a ```DM``` account of the second cluster allows the following:
     1. create PULL policies, where all the primary work is done on the local cluster
         - start PowerScale to PowerScale replications 
@@ -278,7 +281,7 @@ https://portal.ecstestdrive.com/
         - each cluster can pull or download data on demand
         - critical data can be distributed to all systems. 
 
-    ### Access from or with a 2nd Cluster
+   ### Access from or with a 2nd Cluster
 
     1. Install a certificate with the same CA as above
     2. create the same Could account
@@ -326,7 +329,7 @@ https://portal.ecstestdrive.com/
     ```
     3. or restore as if it was the original cluster...<br>Change ```--copy-base-source-account-id``` to match the potentially different account id of the target clusters dm configuration.
 
-    #### PULL to Object from someone elses Cluster...
+   #### PULL to Object from someone elses Cluster...
 
     1. create a dataset creation policy for the remote cluster
 
