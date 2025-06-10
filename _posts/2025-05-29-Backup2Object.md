@@ -146,7 +146,7 @@ https://portal.ecstestdrive.com/
     ```
     The above basicaly allows to retrieve the data structure, however it only shows the latest version of the dataset.
 
-    #### Browsing and downloading
+   #### Browsing and downloading
    
     The interactive ```isi_dm browse``` cli facility allows to switch between accounts and dataset. Access the backed up metadata and to download individual files or folders.
 
