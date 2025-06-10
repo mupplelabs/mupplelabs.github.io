@@ -1,10 +1,9 @@
-<div align=center>
+---
+layout: page
+title: OneFS 9.11 SmartSync 
+---
 
 [![Backup to Object](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)
-
-</div>
-
-# OneFS 9.11 SmartSync  
 
 OneFS SmartSync provides mechanisms to replicate and copy data between Dell PowerScale systems and cloud object storage. By supporting file-to-object replication, SmartSync enables incremental data transfer and preserves metadata during the backup process. This allows for efficient, policy-driven protection and archiving of unstructured data across on-premises and cloud environments, leveraging the scalability of OneFS and cloud storage integration.
 
