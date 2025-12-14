@@ -378,10 +378,11 @@
   </div>
   <div id="message"></div>
   <div class="row">
-    <button id="theme-toggle" class="button">Light/Dark</button>
     <button id="reset-btn" class="button">Reset</button>
     <label for="file-input" class="button">Load JSON</label>
     <input id="file-input" type="file" accept="application/json" style="display:none;" />
+    <button id="demo-btn" class="button">Reload Demo</button>
+    <button id="theme-toggle" class="button">Light/Dark</button>
   </div>
 </header>
 <div class="shell" id="shell">
@@ -503,6 +504,7 @@
 
   const el = {
     themeToggle:document.getElementById('theme-toggle'), 
+    reloadDemoBtn:document.getElementById('demo-btn'),
     resetBtn:document.getElementById('reset-btn'),
     fPath:document.getElementById('f-path'), 
     fName:document.getElementById('f-name'), 
@@ -891,7 +893,12 @@
 
   // global Events
   el.themeToggle.addEventListener('click',()=> document.body.classList.toggle('theme-light'));
-  el.resetBtn.addEventListener('click', () => {
+  el.resetBtn.addEventListener('click', resetAll);
+  el.reloadDemoBtn.addEventListener('click', () => {
+    DemoMode = true;
+    resetAll();
+  })
+  function resetAll() {
     if (DemoMode) {
       allEntries = sampleChangeList.entries.slice();
       showMessage("[ Demo Mode ]", "success");
@@ -916,7 +923,10 @@
     el.viewport.scrollTop = 0;
     el.detailsSummary.textContent = 'Select a row to view details';
     el.detailsJson.textContent = '';
-  });
+    el.treeSearch.value = '';
+    renderTree();
+  }
+
   el.importJson.addEventListener('change', readJsonFileFromInput);
 
   // Filter Events
