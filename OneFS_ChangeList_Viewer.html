@@ -867,7 +867,7 @@
     }
     reader.readAsText(file);
     DemoMode = false;
-    showMessage("[ " + file.name + " ]", "info");
+    showMessage("[ " + file.name + " ]", "success");
   }
   
   // Events
@@ -893,12 +893,11 @@
 
   // global Events
   el.themeToggle.addEventListener('click',()=> document.body.classList.toggle('theme-light'));
-  el.resetBtn.addEventListener('click', resetAll);
-  el.reloadDemoBtn.addEventListener('click', () => {
-    DemoMode = true;
-    resetAll();
-  })
-  function resetAll() {
+  el.resetBtn.addEventListener('click', () => resetAll(resetDemo=false));
+  el.reloadDemoBtn.addEventListener('click', () => resetAll(resetDemo=true));
+
+  function resetAll(resetDemo = false) {
+    if (resetDemo) { DemoMode = true; }
     if (DemoMode) {
       allEntries = sampleChangeList.entries.slice();
       showMessage("[ Demo Mode ]", "success");
@@ -917,13 +916,14 @@
     sortDir = 'desc';
     rowHeight = 36;
     el.rowHeight.value = 36;
-    resetChangeTypesMenu();
-    applyPreset('Minimal');
-    applyFilters();
     el.viewport.scrollTop = 0;
     el.detailsSummary.textContent = 'Select a row to view details';
     el.detailsJson.textContent = '';
     el.treeSearch.value = '';
+    el.importJson.value = '';
+    resetChangeTypesMenu();
+    applyPreset('Minimal');
+    applyFilters();
     renderTree();
   }
 
