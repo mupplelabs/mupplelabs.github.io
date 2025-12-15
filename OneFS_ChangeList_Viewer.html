@@ -54,6 +54,19 @@
     z-index: 10;
   }
 
+  footer {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--panel);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
   .shell {
     display: grid;
     grid-template-columns: 280px 6px 1fr 6px 360px;
@@ -468,10 +481,9 @@
   </aside>
 </div>
 <footer>
-  <div class="muted" style="text-align:center;">
-    Version 1.0.0 - <a href="https://github.com/mupplelabs/OneFS_ChangeList_Viewer">Source</a> -
-    <a href="https://www.mupplelabs.de">Mupples Innovation Labs</a> #Iwork@DELL
-  </div>
+  <div class="muted">Version 1.0.0 </div>
+  <div class="muted"><a href="https://www.mupplelabs.de">Mupples Innovation Labs</a> - <a href="https://github.com/mupplelabs/OneFS_ChangeList_Viewer">Source</a></div> 
+  <div class="muted">#Iwork@DELL</div>
 </footer>
 <script>
   const sampleChangeList = { entries: [
