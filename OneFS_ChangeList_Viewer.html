@@ -112,7 +112,7 @@
   }
 
   .node.active {
-    outline: 1px solid var(--border);
+    outline: 1px solid var(--accent);
   }
 
   .toggle {
@@ -389,7 +389,10 @@
   <aside id="tree" class="panel">
     <div class="tree-title">
       <span>Directories</span>
-      <span class="row"><button id="expand-all" class="button">Expand</button><button id="collapse-all" class="button">Collapse</button></span>
+      <span class="row">
+        <button id="expand-all" class="button">Expand</button>
+        <button id="collapse-all" class="button">Collapse</button>
+      </span>
     </div>
     <input id="tree-search" class="tree-search" type="text" placeholder="Search directories..." />
     <ul id="tree-root" class="tree"></ul>
@@ -939,6 +942,11 @@
     groupByLin=el.groupByLin.checked; 
     applyFilters(); 
   });
+
+  el.sortField.addEventListener('change', ()=>{ sortField = el.sortField.value; applyFilters(); });
+  el.sortDir.addEventListener('change', ()=>{ sortDir = el.sortDir.value; applyFilters(); });
+  el.rowHeight.addEventListener('input', ()=>{ rowHeight = Number(el.rowHeight.value)||36; renderVirtualRows(); });
+
   el.columnsBtn.addEventListener('click',()=> el.columnsMenu.classList.toggle('show'));
   el.presetMin.addEventListener('click',()=> applyPreset('Minimal')); 
   el.presetExt.addEventListener('click',()=> applyPreset('Extended')); 
