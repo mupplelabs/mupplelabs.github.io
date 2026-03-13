@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneFS ChangeList Viewer v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body data-theme="dark">
+    <header>
+        <div class="logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <span class="logo-text">OneFS ChangeList Explorer</span>
+        </div>
+        <div class="controls">
+            <input type="file" id="fileInput" hidden accept=".json">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                </svg>
+                Open File
+            </button>
+            <button class="btn" id="demoBtn">Load Demo</button>
+            <div class="dropdown">
+                <button class="btn" id="colBtn">
+                    Columns
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                </button>
+                <div class="dropdown-content" id="colDropdown">
+                    <!-- Column checkboxes will be injected here -->
+                </div>
+            </div>
+            <button class="btn btn-primary" id="exportBtn">Export</button>
+            <div style="width: 1px; height: 16px; margin: 0 4px;"></div>
+            <!--<div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 4px;"></div>-->
+            <button class="btn" id="themeToggle" title="Toggle Theme">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <aside id="explorerPanel" tabindex="-1">
+            <div class="aside-header">Explorer</div>
+            <div style="padding: 8px 16px;">
+                <input type="text" id="treeSearch" placeholder="Filter directories..." class="input-base"
+                    style="width: 100%;">
+            </div>
+            <div class="tree-container" id="directoryTree">
+                <!-- Tree nodes -->
+            </div>
+        </aside>
+
+        <main tabindex="-1">
+            <div class="filter-bar">
+                <input type="text" id="tableSearch" placeholder="Search entries..." class="input-base" style="flex: 1;">
+
+                <select id="typeFilter" class="input-base">
+                    <option value="all">(any type)</option>
+                    <option value="regular">regular</option>
+                    <option value="directory">directory</option>
+                    <option value="REMOVED">REMOVED</option>
+                </select>
+
+                <select id="changeFilter" class="input-base">
+                    <option value="all">(any change)</option>
+                    <option value="ENTRY_ADDED">ENTRY_ADDED</option>
+                    <option value="ENTRY_REMOVED">ENTRY_REMOVED</option>
+                    <option value="ENTRY_MODIFIED">ENTRY_MODIFIED</option>
+                    <option value="ENTRY_PARENT_REMOVED">ENTRY_PARENT_REMOVED</option>
+                    <option value="ENTRY_HAS_ADS">ENTRY_HAS_ADS</option>
+                    <option value="ENTRY_ADS">ENTRY_ADS</option>
+                    <option value="ENTRY_PATH_CHANGED">ENTRY_PATH_CHANGED</option>
+                    <option value="ENTRY_PATH_LOOKUP_REQ">ENTRY_PATH_LOOKUP_REQ</option>
+                    <option value="ENTRY_HAS_HARDLINKS">ENTRY_HAS_HARDLINKS</option>
+                    <option value="ENTRY_WORM_COMMITTED">ENTRY_WORM_COMMITTED</option>
+                    <option value="MOVE_ENHANCED">(moved)</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead id="tableHead">
+                        <!-- Dynamic headers -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data rows -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <aside class="details-panel" id="detailsPanel" tabindex="-1">
+            <div class="details-header">Details</div>
+            <div id="detailsContent" class="details-content">Select an entry to view metadata.</div>
+        </aside>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
