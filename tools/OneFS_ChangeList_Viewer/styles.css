@@ -164,6 +164,24 @@ th {
     color: var(--text-secondary);
     font-weight: 400;
     font-size: 0.75rem;
+    user-select: none;
+    transition: color 0.1s;
+}
+
+th:hover {
+    color: var(--text-primary);
+}
+
+th.sort-asc::after {
+    content: " ▲";
+    font-size: 0.7em;
+    opacity: 0.8;
+}
+
+th.sort-desc::after {
+    content: " ▼";
+    font-size: 0.7em;
+    opacity: 0.8;
 }
 
 td {
@@ -292,13 +310,6 @@ tr.selected {
     background: rgba(215, 186, 125, 0.15);
     color: #d7ba7d; /* Sand/Gold (Locked) */
     border-color: rgba(215, 186, 125, 0.3);
-}
-
-.badge-TOOL_ENHANCED {
-    background: rgba(177, 128, 215, 0.15);
-    color: var(--accent-purple);
-    border-color: rgba(177, 128, 215, 0.3);
-    font-style: italic;
 }
 
 /* Tree Styles */
@@ -440,6 +451,120 @@ tr.selected {
     max-width: 400px;
     width: 90%;
     text-align: center;
+}
+
+/* Analytics Dashboard */
+.dashboard-overlay {
+    position: absolute;
+    top: 48px; /* Below header */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.dashboard-overlay.hidden {
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dashboard-header {
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary);
+    z-index: 10;
+}
+
+.dashboard-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.dashboard-content {
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.chart-card {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chart-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    margin: 0;
+}
+
+/* DOM-based Bar Chart */
+.bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-label-area {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+}
+
+.bar-label {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+
+.bar-value {
+    color: var(--text-secondary);
+}
+
+.bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--accent-blue);
 }
 
 /* Responsive Styles */

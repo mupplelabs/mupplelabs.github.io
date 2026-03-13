@@ -41,6 +41,12 @@
             </div>
             <button class="btn btn-primary" id="exportBtn">Export</button>
             <div style="width: 1px; height: 16px; margin: 0 4px;"></div>
+            <button class="btn" id="dashboardBtn" title="Analytics Dashboard">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18M7 16l4-4 4 4 4-4"/>
+                </svg>
+                <span>Dashboard</span>
+            </button>
             <!--<div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 4px;"></div>-->
             <button class="btn" id="themeToggle" title="Toggle Theme">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -104,6 +110,20 @@
             <div class="details-header">Details</div>
             <div id="detailsContent" class="details-content">Select an entry to view metadata.</div>
         </aside>
+    </div>
+
+    <!-- Analytics Dashboard Overlay -->
+    <div class="dashboard-overlay hidden" id="dashboardOverlay">
+        <div class="dashboard-header">
+            <h2>Changelist Analytics</h2>
+            <button class="btn" id="closeDashboardBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Close
+            </button>
+        </div>
+        <div class="dashboard-content" id="dashboardContent">
+            <!-- Charts will be injected here -->
+        </div>
     </div>
 
     <script src="app.js"></script>

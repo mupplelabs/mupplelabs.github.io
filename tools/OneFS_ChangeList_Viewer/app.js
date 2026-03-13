@@ -4,6 +4,8 @@ let processedEntries = [];
 let filteredEntries = [];
 let selectedEntry = null;
 let currentTheme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+let sortColumn = 'path';
+let sortDirection = 'asc'; // 'asc' or 'desc'
 
 // initial theme setup
 if (currentTheme !== 'dark' && currentTheme !== 'light') {
@@ -114,6 +116,16 @@ function detectMoves(entries, opts = { enableLooseMatch: true, ctimeWindowSec: 5
 
 // --- UI Rendering ---
 
+function handleSort(columnId) {
+    if (sortColumn === columnId) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortColumn = columnId;
+        sortDirection = 'asc';
+    }
+    renderTable();
+}
+
 function renderTable() {
     const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
@@ -122,20 +134,58 @@ function renderTable() {
 
     // Create Headers
     const headerRow = document.createElement('tr');
-    ALL_COLUMNS.filter(c => visibleColumnIds.has(c.id)).forEach(col => {
+    const visibleCols = ALL_COLUMNS.filter(c => visibleColumnIds.has(c.id));
+    
+    visibleCols.forEach(col => {
         const th = document.createElement('th');
         th.textContent = col.label;
+        th.style.cursor = 'pointer';
+        
+        if (sortColumn === col.id) {
+            th.className = sortDirection === 'asc' ? 'sort-asc' : 'sort-desc';
+        }
+        
+        th.onclick = () => handleSort(col.id);
         headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
 
+    // Sort Data
+    let entriesToRender = [...filteredEntries];
+    if (sortColumn) {
+        const colDef = ALL_COLUMNS.find(c => c.id === sortColumn);
+        entriesToRender.sort((a, b) => {
+            let valA = a[sortColumn];
+            let valB = b[sortColumn];
+
+            // Normalize values for sorting
+            if (colDef?.type === 'date') {
+                valA = valA?.sec || 0;
+                valB = valB?.sec || 0;
+            } else if (colDef?.type === 'array' || sortColumn === 'change_types') {
+                valA = (valA || []).join(',');
+                valB = (valB || []).join(',');
+            } else if (sortColumn === 'path') {
+                valA = (valA || '').toLowerCase();
+                valB = (valB || '').toLowerCase();
+            }
+
+            if (valA === valB) return 0;
+            if (valA == null) return sortDirection === 'asc' ? -1 : 1;
+            if (valB == null) return sortDirection === 'asc' ? 1 : -1;
+
+            let cmp = valA < valB ? -1 : 1;
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+    }
+
     // Create Rows
-    filteredEntries.forEach(entry => {
+    entriesToRender.forEach(entry => {
         const tr = document.createElement('tr');
         if (selectedEntry === entry) tr.classList.add('selected');
         tr.onclick = () => selectEntry(entry);
 
-        ALL_COLUMNS.filter(c => visibleColumnIds.has(c.id)).forEach(col => {
+        visibleCols.forEach(col => {
             const td = document.createElement('td');
             const value = entry[col.id];
 
@@ -152,9 +202,6 @@ function renderTable() {
                 const badges = (entry.change_types || []).map(type => 
                     `<span class="badge badge-${type.replace('ENTRY_', '')}">${type.replace('ENTRY_', '')}</span>`
                 );
-                if (entry.isMove) {
-                    badges.push(`<span class="badge badge-TOOL_ENHANCED" title="Identified as a move by the tool">(moved)</span>`);
-                }
                 td.innerHTML = badges.join(' ');
             } else if (col.type === 'size') {
                 td.textContent = value != null ? formatSize(value) : '-';
@@ -304,12 +351,101 @@ function applyFilters() {
         const matchesPath = e.path.startsWith(path);
         const matchesSearch = !search || e.path.toLowerCase().includes(search);
         const matchesType = type === 'all' || e.file_type === type;
-        const matchesChange = change === 'all' || 
-            (change === 'MOVE_ENHANCED' ? e.isMove : e.change_types?.includes(change));
+        const matchesChange = change === 'all' || e.change_types?.includes(change);
         
         return matchesPath && matchesSearch && matchesType && matchesChange;
     });
     renderTable();
+    if (!document.getElementById('dashboardOverlay').classList.contains('hidden')) {
+        renderDashboard();
+    }
+}
+
+// --- Analytics Dashboard ---
+
+function renderDashboard() {
+    const container = document.getElementById('dashboardContent');
+    container.innerHTML = ''; // Clear existing
+    
+    if (filteredEntries.length === 0) {
+        container.innerHTML = '<div style="padding: 24px; color: var(--text-secondary);">No data matches the current filters.</div>';
+        return;
+    }
+
+    // 1. Change Types Aggregation
+    const changeCounts = {};
+    // 2. Size Distribution Aggregation
+    const sizeBuckets = { '< 1 MB': 0, '1 MB - 100 MB': 0, '100 MB - 1 GB': 0, '> 1 GB': 0 };
+    // 3. Top Directories Aggregation
+    const dirCounts = {};
+
+    filteredEntries.forEach(e => {
+        // Change Types
+        (e.change_types || []).forEach(ct => {
+            changeCounts[ct] = (changeCounts[ct] || 0) + 1;
+        });
+
+        // Sizes (using physical_size or size)
+        const size = e.physical_size !== undefined ? e.physical_size : (e.size || 0);
+        if (size < 1048576) sizeBuckets['< 1 MB']++;
+        else if (size < 104857600) sizeBuckets['1 MB - 100 MB']++;
+        else if (size < 1073741824) sizeBuckets['100 MB - 1 GB']++;
+        else sizeBuckets['> 1 GB']++;
+
+        // Directories
+        const parentPath = e.path.substring(0, e.path.lastIndexOf('/')) || '/';
+        dirCounts[parentPath] = (dirCounts[parentPath] || 0) + 1;
+    });
+
+    // Helper to generate HTML for a chart card
+    function buildChartCard(title, dataObj, maxItems = 10, useBadgeColors = false) {
+        // Sort descending
+        const sorted = Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
+        const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
+
+        let html = `<div class="chart-card">
+                        <h3 class="chart-title">${title}</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">`;
+        
+        sorted.forEach(([label, val]) => {
+            const pct = Math.max((val / maxVal) * 100, 1); // at least 1% so line is visible
+            let colorVar = 'var(--accent-blue)'; // default
+            
+            if (useBadgeColors) {
+                // Map the api string to our CSS colors manually or by extracting computed styles.
+                // For simplicity, we assign specific colors loosely based on our CSS.
+                if (label.includes('ADDED')) colorVar = 'var(--accent-green)';
+                else if (label.includes('REMOVED')) colorVar = 'var(--accent-red)';
+                else if (label.includes('MODIFIED')) colorVar = 'var(--accent-yellow)';
+                else if (label.includes('PATH_CHANGED')) colorVar = 'var(--accent-blue)';
+                else if (label.includes('ADS')) colorVar = '#4ec9b0';
+                else if (label.includes('HARDLINKS')) colorVar = '#c586c0';
+                else if (label.includes('LOOKUP_REQ')) colorVar = '#a0a0a0';
+                else if (label.includes('WORM')) colorVar = '#d7ba7d';
+            }
+
+            // Cleanup label for raw ENTRY_ strings
+            const displayLabel = useBadgeColors ? label.replace('ENTRY_', '') : label;
+
+            html += `
+                <div class="bar-row">
+                    <div class="bar-label-area">
+                        <span class="bar-label" title="${displayLabel}">${displayLabel}</span>
+                        <span class="bar-value">${val}</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${pct}%; background: ${colorVar};"></div>
+                    </div>
+                </div>`;
+        });
+
+        html += `</div></div>`;
+        return html;
+    }
+
+    container.innerHTML += buildChartCard('Change Types Distribution', changeCounts, 15, true);
+    container.innerHTML += buildChartCard('File Size Distribution', sizeBuckets, 4);
+    container.innerHTML += buildChartCard('Top Churned Directories', dirCounts, 10);
 }
 
 // --- Initialization & Events ---
@@ -327,6 +463,8 @@ async function loadData(data) {
     document.getElementById('treeSearch').value = '';
     window.activePath = '';
     selectedEntry = null;
+    sortColumn = 'path';
+    sortDirection = 'asc';
     
     // Clear details panel
     document.getElementById('detailsContent').innerHTML = 'Select an entry to view metadata.';
@@ -438,6 +576,15 @@ document.getElementById('exportBtn').onclick = () => {
     document.getElementById('btnCSV').onclick = () => exportFile('csv');
     document.getElementById('btnJSON').onclick = () => exportFile('json');
     document.getElementById('btnCancel').onclick = () => document.body.removeChild(modal);
+};
+
+// Dashboard Toggles
+document.getElementById('dashboardBtn').onclick = () => {
+    document.getElementById('dashboardOverlay').classList.remove('hidden');
+    renderDashboard();
+};
+document.getElementById('closeDashboardBtn').onclick = () => {
+    document.getElementById('dashboardOverlay').classList.add('hidden');
 };
 
 // Start
