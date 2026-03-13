@@ -1,4 +1,7 @@
-How-To:
+---
+layout: page
+title: OneFS 9.12+ Secure Snapshots and Root Lockdown 
+---
 # OneFS Secure Snapshots, Multi-Party Authorization, and Root Lockdown Mode
 ## Introduction
 
@@ -84,7 +87,8 @@ The following steps are performed using the clusters WebUI. The approval adminis
 | Reduce expiry date                          | Yes                     |
 | Rename to reserved name                     | Yes                     |
 
--> Deleting snapshots without retention time set is considered safe and does not require approval.</br>
+-> Deleting snapshots without retention time set is considered safe and does not require approval.
+
 -> Modifying schedules or deleting non-expired scheduled snapshots requires MPA approval.
 
 ## Step 4: Protecting Retention against System Time changes with RBAC
@@ -120,20 +124,27 @@ OneFS uses system time for snapshot retention. Changing cluster time can cause i
     compadmin ALL=(ALL) /usr/sbin/isi_for_array \*
     ```
 
-Alternatively, but potentially dangerous, to allow isi_for_array for everyone:</br>
+    Alternatively, but potentially dangerous, to allow isi_for_array for everyone: 
 ```ALL ALL=(ALL) /usr/sbin/isi_for_array \*```
 
 - **Apply Hardening Profile**
 
-- List profiles:
-
-isi hardening list
-
-- Apply root-lockdown profile:
-
-    ```isi hardening apply root-lockdown```
-
-- Approve via MPA and reboot cluster.
+    - List profiles:
+    
+        ```isi hardening list```
+      
+    - View hardening report
+    
+        ```isi hardening report view root-lockdown```
+    
+    - Apply root-lockdown profile:
+    
+        ```isi hardening apply root-lockdown```
+      
+      **Note**: this will only generate an MPA request.
+      Have it approved via MPA and rerun the command.
+    - Chech the hardening report again
+    - now reboot the cluster.
 
 **How do I use isi_elevate_root?**
 
@@ -142,33 +153,33 @@ isi hardening list
 
     ```sudo isi_mpa_check --fail-if-mpa-disabled /usr/bin/isi_elevate_root```
 
-This should create a MPA request for elevating to root. Approve the created MPA request with one of the approver-accounts.
+    This should create a MPA request for elevating to root. Approve the created MPA request with one of the approver-accounts.
 
 - Be aware that **compadmin** does **NOT** have the ISI_PRIV_ELEVATE_ROOT privilege by default!
 - Finally, rerun the command to start the elevated shell.
 
 **Testing and Verification:**
 
-- File system access follows user permissions.
+- File system access follows user permissions, if a user requires to mangle permissions, add the user to the BACKUPADMIN role.
 - Attempt to change system time using date command should fail.
 - Change system time with:
 
     ```sudo isi_mpa_check isi cluster time modify 202510301500```
 
-**Note:** This requires MPA approval each time, depending on retention as  
-provided by approver.
+    **Note:** This requires MPA approval each time, depending on retention as  
+    provided by approver.
 
 - Run a command on all nodes on a cluster with isi_for_array:
 
     ```sudo isi_for_array -s hostname```
 
-**Note:** this requires NO MPA approval.
+    **Note:** this requires NO MPA approval.
 
 - Elevate to root (for rare occasions) with:
 
     ```sudo isi_mpa_check --fail-if-mpa-disabled /usr/bin/isi_elevate_root```
 
-Requires MPA approval.
+    Requires MPA approval.
 
 **Disabling RLM:**
 
@@ -184,13 +195,13 @@ Requires MPA approval.
 
     ```isi hardening disable root-lockdown```
 
-This also requires MPA approval and a reboot.
+    This also requires MPA approval and a reboot.
 
 - Review the report again
 
     ```isi hardening report view root-lockdown```
 
-**Note:** Not all RLM Settings have been revoked initially: run "isi hardening disable root-lockdown" again.
+    **Note:** Not all RLM Settings have been revoked initially: run "isi hardening disable root-lockdown" again.
 
 ## Conclusion
 
