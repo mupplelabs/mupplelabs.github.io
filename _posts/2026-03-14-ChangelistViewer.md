@@ -1,7 +1,7 @@
 ---
 layout: page
 title: A OneFS ChangeList Explorer
-tags: OneFS PowerScale API TOOL #IWORK4DELL
+tags: OneFS PowerScale API tools
 ---
 
 # A OneFS ChangeList Viewer
