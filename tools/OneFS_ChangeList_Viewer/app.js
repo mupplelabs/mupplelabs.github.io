@@ -4,6 +4,7 @@ let processedEntries = [];
 let filteredEntries = [];
 let selectedEntry = null;
 let currentTheme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+let demoDataUrl = new URLSearchParams(window.location.search).get('data_url') || 'large_changelist_demo.json';
 let sortColumn = 'path';
 let sortDirection = 'asc'; // 'asc' or 'desc'
 
@@ -473,16 +474,15 @@ async function loadData(data) {
     buildTree();
 }
 
-document.getElementById('demoBtn').onclick = () => {
-    const demo = [
-        { path: '/ifs/data/old_name.txt', file_type: 'regular', change_types: ['ENTRY_REMOVED', 'ENTRY_PATH_CHANGED'], lin: 101, size: 1024, ctime: { sec: 1710350000 }, uid: 1001, gid: 1001 },
-        { path: '/ifs/data/new_name.txt', file_type: 'regular', change_types: ['ENTRY_ADDED', 'ENTRY_PATH_CHANGED'], lin: 101, size: 1024, ctime: { sec: 1710350001 }, uid: 1001, gid: 1001 },
-        { path: '/ifs/docs/report.pdf', file_type: 'regular', change_types: ['ENTRY_ADDED'], lin: 102, size: 5242880, ctime: { sec: 1710350005 } },
-        { path: '/ifs/data/config.json', file_type: 'regular', change_types: ['ENTRY_MODIFIED', 'ENTRY_HAS_ADS'], lin: 103, size: 4096, ctime: { sec: 1710350010 } },
-        { path: '/ifs/deleted_dir', file_type: 'REMOVED', change_types: ['ENTRY_REMOVED'], lin: 104, ctime: { sec: 1710350015 } },
-        { path: '/ifs/data/locked.file', file_type: 'regular', change_types: ['ENTRY_WORM_COMMITTED'], lin: 105, size: 0, ctime: { sec: 1710350020 } }
-    ];
-    loadData(demo);
+document.getElementById('demoBtn').onclick = async () => {
+    try {
+        const response = await fetch(demoDataUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        loadData(data);
+    } catch (err) {
+        alert('Failed to load demo data: ' + err.message + '\\n\\nNote: If you are opening this HTML file directly from your local filesystem (file:// protocol), your browser may block the fetch request due to security policies (CORS). Please use a local web server, or select the file manually via "Open File".');
+    }
 };
 
 document.getElementById('fileInput').onchange = (e) => {
