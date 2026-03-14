@@ -1,6 +1,7 @@
 ---
 layout: page
 title: OneFS 9.11 SmartSync 
+tags: OneFS PowerScale Backup Cloud
 ---
 
 [![Backup to Object](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)](https://infohub.delltechnologies.com/static/media/bb5e5c72-355c-4b24-ba45-c4c712edb7c3.png)
