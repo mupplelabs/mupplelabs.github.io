@@ -1,6 +1,7 @@
 ---
 layout: page
 title: OneFS 9.12+ Secure Snapshots and Root Lockdown 
+tags: OneFS PowerScale Snapshots Security
 ---
 # OneFS Secure Snapshots, Multi-Party Authorization, and Root Lockdown Mode
 ## Introduction
