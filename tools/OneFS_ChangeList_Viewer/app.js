@@ -2,6 +2,7 @@
 let rawEntries = [];
 let processedEntries = [];
 let filteredEntries = [];
+let sortedEntries = [];
 let selectedEntry = null;
 let currentTheme = new URLSearchParams(window.location.search).get('theme') || 'dark';
 let demoDataUrl = new URLSearchParams(window.location.search).get('data_url') || 'large_changelist_demo.json';
@@ -151,11 +152,11 @@ function renderTable() {
     });
     thead.appendChild(headerRow);
 
-    // Sort Data
-    let entriesToRender = [...filteredEntries];
+    // Sort Data ONCE
+    sortedEntries = [...filteredEntries];
     if (sortColumn) {
         const colDef = ALL_COLUMNS.find(c => c.id === sortColumn);
-        entriesToRender.sort((a, b) => {
+        sortedEntries.sort((a, b) => {
             let valA = a[sortColumn];
             let valB = b[sortColumn];
 
@@ -180,9 +181,50 @@ function renderTable() {
         });
     }
 
-    // Create Rows
-    entriesToRender.forEach(entry => {
+    const container = document.querySelector('.table-container');
+    container.scrollTop = 0;
+    renderVirtualRows();
+}
+
+function renderVirtualRows() {
+    const tbody = document.getElementById('tableBody');
+    const container = document.querySelector('.table-container');
+    const scrollTop = container.scrollTop;
+    const clientHeight = container.clientHeight;
+
+    const ROW_HEIGHT = 35;
+    const BUFFER = 10;
+    const totalRows = sortedEntries.length;
+
+    let startIndex = Math.floor(scrollTop / ROW_HEIGHT) - BUFFER;
+    let endIndex = Math.floor((scrollTop + clientHeight) / ROW_HEIGHT) + BUFFER;
+
+    startIndex = Math.max(0, startIndex);
+    endIndex = Math.min(totalRows, endIndex);
+
+    const topSpacerHeight = startIndex * ROW_HEIGHT;
+    const bottomSpacerHeight = (totalRows - endIndex) * ROW_HEIGHT;
+
+    tbody.innerHTML = '';
+
+    const visibleCols = ALL_COLUMNS.filter(c => visibleColumnIds.has(c.id));
+
+    if (topSpacerHeight > 0) {
+        const trTop = document.createElement('tr');
+        trTop.style.height = `${topSpacerHeight}px`;
+        trTop.className = 'virtual-spacer';
+        const td = document.createElement('td');
+        td.colSpan = visibleCols.length;
+        td.style.padding = 0;
+        td.style.border = 'none';
+        trTop.appendChild(td);
+        tbody.appendChild(trTop);
+    }
+
+    for (let i = startIndex; i < endIndex; i++) {
+        const entry = sortedEntries[i];
         const tr = document.createElement('tr');
+        tr.style.height = `${ROW_HEIGHT}px`;
         if (selectedEntry === entry) tr.classList.add('selected');
         tr.onclick = () => selectEntry(entry);
 
@@ -216,7 +258,19 @@ function renderTable() {
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
-    });
+    }
+
+    if (bottomSpacerHeight > 0) {
+        const trBottom = document.createElement('tr');
+        trBottom.style.height = `${bottomSpacerHeight}px`;
+        trBottom.className = 'virtual-spacer';
+        const td = document.createElement('td');
+        td.colSpan = visibleCols.length;
+        td.style.padding = 0;
+        td.style.border = 'none';
+        trBottom.appendChild(td);
+        tbody.appendChild(trBottom);
+    }
 }
 
 function formatSize(bytes) {
@@ -380,6 +434,13 @@ function renderDashboard() {
     // 3. Top Directories Aggregation
     const dirCounts = {};
 
+    // 4. Data Pool Aggregation
+    const poolCounts = {};
+    // 5. File Type Aggregation
+    const typeCounts = {};
+    // 6. User Flags Breakdown (individual bits)
+    const flagCounts = {};
+
     filteredEntries.forEach(e => {
         // Change Types
         (e.change_types || []).forEach(ct => {
@@ -396,6 +457,23 @@ function renderDashboard() {
         // Directories
         const parentPath = e.path.substring(0, e.path.lastIndexOf('/')) || '/';
         dirCounts[parentPath] = (dirCounts[parentPath] || 0) + 1;
+
+        // Data Pools
+        if (e.data_pool !== undefined) {
+            poolCounts[e.data_pool] = (poolCounts[e.data_pool] || 0) + 1;
+        }
+
+        // File Types
+        if (e.file_type) {
+            typeCounts[e.file_type] = (typeCounts[e.file_type] || 0) + 1;
+        }
+
+        // User Flags Breakdown
+        if (Array.isArray(e.user_flags)) {
+            e.user_flags.forEach(f => {
+                flagCounts[f] = (flagCounts[f] || 0) + 1;
+            });
+        }
     });
 
     // Helper to generate HTML for a chart card
@@ -403,6 +481,8 @@ function renderDashboard() {
         // Sort descending
         const sorted = Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
         const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
+
+        if (sorted.length === 0) return ''; // Don't show empty charts
 
         let html = `<div class="chart-card">
                         <h3 class="chart-title">${title}</h3>
@@ -414,7 +494,6 @@ function renderDashboard() {
             
             if (useBadgeColors) {
                 // Map the api string to our CSS colors manually or by extracting computed styles.
-                // For simplicity, we assign specific colors loosely based on our CSS.
                 if (label.includes('ADDED')) colorVar = 'var(--accent-green)';
                 else if (label.includes('REMOVED')) colorVar = 'var(--accent-red)';
                 else if (label.includes('MODIFIED')) colorVar = 'var(--accent-yellow)';
@@ -445,16 +524,133 @@ function renderDashboard() {
     }
 
     container.innerHTML += buildChartCard('Change Types Distribution', changeCounts, 15, true);
+    container.innerHTML += buildChartCard('File Type Distribution', typeCounts, 5);
     container.innerHTML += buildChartCard('File Size Distribution', sizeBuckets, 4);
+    container.innerHTML += buildChartCard('Data Pool Distribution', poolCounts, 10);
+    container.innerHTML += buildChartCard('User Flags Breakdown', flagCounts, 15);
     container.innerHTML += buildChartCard('Top Churned Directories', dirCounts, 10);
 }
 
 // --- Initialization & Events ---
 
-// --- Initialization & Events ---
+document.querySelector('.table-container').addEventListener('scroll', () => {
+    window.requestAnimationFrame(() => renderVirtualRows());
+});
 
-async function loadData(data) {
-    rawEntries = Array.isArray(data) ? data : (data.entries || []);
+function showLoading(show, message = 'Loading...') {
+    let loader = document.getElementById('loaderOverlay');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.id = 'loaderOverlay';
+        loader.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;';
+        loader.innerHTML = `
+            <div style="width:200px;height:4px;background:#333;border-radius:2px;margin-bottom:12px;overflow:hidden;">
+                <div id="loaderProgress" style="width:0;height:100%;background:var(--accent-blue);transition:width 0.2s;"></div>
+            </div>
+            <div id="loaderText">${message}</div>
+        `;
+        document.body.appendChild(loader);
+    }
+    loader.style.display = show ? 'flex' : 'none';
+    if (show) {
+        document.getElementById('loaderProgress').style.width = '0%';
+        document.getElementById('loaderText').textContent = message;
+    }
+}
+
+function updateLoadingProgress(pct, message) {
+    const progress = document.getElementById('loaderProgress');
+    const text = document.getElementById('loaderText');
+    if (progress) progress.style.width = `${pct}%`;
+    if (text && message) text.textContent = message;
+}
+
+async function streamParseJSON(reader, totalSize) {
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let bytesRead = 0;
+    let entryCount = 0;
+    
+    rawEntries = [];
+    processedEntries = [];
+    
+    // Tiny state machine to find the start of the "entries" array
+    let foundEntriesStart = false;
+    let depth = 0;
+    let currentObjectStart = -1;
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        bytesRead += value.length;
+        buffer += decoder.decode(value, { stream: true });
+        
+        if (totalSize) {
+            updateLoadingProgress((bytesRead / totalSize) * 100, `Streaming data... (${entryCount.toLocaleString()} entries)`);
+        }
+
+        // Extremely simple but memory-efficient streaming object extractor
+        // We look for { ... } patterns once we are inside the entries array
+        let i = 0;
+        while (i < buffer.length) {
+            const char = buffer[i];
+            
+            if (!foundEntriesStart) {
+                // Look for "entries": [
+                if (buffer.slice(i, i + 10) === '"entries":') {
+                    foundEntriesStart = true;
+                    i += 10;
+                    continue;
+                }
+            } else {
+                if (char === '{') {
+                    if (depth === 0) currentObjectStart = i;
+                    depth++;
+                } else if (char === '}') {
+                    depth--;
+                    if (depth === 0 && currentObjectStart !== -1) {
+                        const jsonStr = buffer.slice(currentObjectStart, i + 1);
+                        try {
+                            const entry = JSON.parse(jsonStr);
+                            rawEntries.push(entry);
+                            entryCount++;
+                            // Periodically process moves to keep memory flat if we wanted, 
+                            // but for now we still hold processedEntries in RAM.
+                        } catch (e) {
+                            console.error("Partial JSON parse error", e);
+                        }
+                        // Advance buffer
+                        buffer = buffer.slice(i + 1);
+                        i = -1; // Reset loop for new buffer
+                        currentObjectStart = -1;
+                    }
+                }
+            }
+            i++;
+        }
+        
+        // Safety: if buffer gets too large without finding an object, something is wrong
+        if (buffer.length > 10 * 1024 * 1024) { // 10MB safety valve
+             console.warn("Buffer overflow in streaming parser");
+             break;
+        }
+    }
+}
+
+async function loadData(dataOrStream, totalSize) {
+    showLoading(true, 'Initialising...');
+    
+    if (dataOrStream instanceof ReadableStream) {
+        await streamParseJSON(dataOrStream.getReader(), totalSize);
+    } else {
+        rawEntries = Array.isArray(dataOrStream) ? dataOrStream : (dataOrStream.entries || []);
+    }
+    
+    updateLoadingProgress(90, 'Processing Move Detection...');
+    // Small timeout to allow UI to show the 90% state
+    await new Promise(r => setTimeout(r, 50));
+    
     processedEntries = detectMoves(rawEntries);
     
     // Reset filters and selection
@@ -467,33 +663,36 @@ async function loadData(data) {
     sortColumn = 'path';
     sortDirection = 'asc';
     
-    // Clear details panel
     document.getElementById('detailsContent').innerHTML = 'Select an entry to view metadata.';
     
     applyFilters();
     buildTree();
+    showLoading(false);
 }
 
 document.getElementById('demoBtn').onclick = async () => {
     try {
         const response = await fetch(demoDataUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        loadData(data);
+        
+        const totalSize = parseInt(response.headers.get('content-length') || '0');
+        await loadData(response.body, totalSize);
     } catch (err) {
-        alert('Failed to load demo data: ' + err.message + '\\n\\nNote: If you are opening this HTML file directly from your local filesystem (file:// protocol), your browser may block the fetch request due to security policies (CORS). Please use a local web server, or select the file manually via "Open File".');
+        showLoading(false);
+        alert('Failed to load demo data: ' + err.message + '\n\nNote: If you are opening this HTML file directly from your local filesystem (file:// protocol), your browser may block the fetch request due to security policies (CORS). Please use a local web server, or select the file manually via "Open File".');
     }
 };
 
-document.getElementById('fileInput').onchange = (e) => {
+document.getElementById('fileInput').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        try { loadData(JSON.parse(event.target.result)); }
-        catch (err) { alert('Error: ' + err.message); }
-    };
-    reader.readAsText(file);
+    
+    try {
+        await loadData(file.stream(), file.size);
+    } catch (err) {
+        showLoading(false);
+        alert('Error parsing file: ' + err.message);
+    }
 };
 
 document.getElementById('colBtn').onclick = (e) => {
@@ -585,6 +784,24 @@ document.getElementById('dashboardBtn').onclick = () => {
 };
 document.getElementById('closeDashboardBtn').onclick = () => {
     document.getElementById('dashboardOverlay').classList.add('hidden');
+};
+
+document.getElementById('copyDetailsBtn').onclick = () => {
+    if (!selectedEntry) return;
+    const json = JSON.stringify(selectedEntry, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+        const btn = document.getElementById('copyDetailsBtn');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy!', err);
+    });
+};
+
+document.getElementById('closeDetailsBtn').onclick = (e) => {
+    e.stopPropagation();
+    document.querySelector('main').focus();
 };
 
 // Start

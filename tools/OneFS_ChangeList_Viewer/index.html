@@ -107,7 +107,21 @@
         </main>
 
         <aside class="details-panel" id="detailsPanel" tabindex="-1">
-            <div class="details-header">Details</div>
+            <div class="details-header">
+                <span>Details</span>
+                <button class="btn btn-icon" id="copyDetailsBtn" title="Copy to Clipboard">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                    </svg>
+                </button>
+                <button class="btn btn-icon mobile-only" id="closeDetailsBtn" title="Close Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
             <div id="detailsContent" class="details-content">Select an entry to view metadata.</div>
         </aside>
     </div>
