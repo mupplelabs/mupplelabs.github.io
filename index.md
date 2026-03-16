@@ -7,19 +7,10 @@
 #
 layout: home
 ---
-<div align="center">
-  
-<pre>
-                                  ___           ___             __                
-                                 /\_ \         /\_ \           /\ \               
-  ___ ___   __  __  _____   _____\//\ \      __\//\ \      __  \ \ \____    ____  
-/' __` __`\/\ \/\ \/\ '__`\/\ '__`\\ \ \   /'__`\\ \ \   /'__`\ \ \ '__`\  /',__\ 
-/\ \/\ \/\ \ \ \_\ \ \ \L\ \ \ \L\ \\_\ \_/\  __/ \_\ \_/\ \L\.\_\ \ \L\ \/\__, `\
-\ \_\ \_\ \_\ \____/\ \ ,__/\ \ ,__//\____\ \____\/\____\ \__/.\_\\ \_,__/\/\____/
- \/_/\/_/\/_/\/___/  \ \ \/  \ \ \/ \/____/\/____/\/____/\/__/\/_/ \/___/  \/___/ 
-                      \ \_\   \ \_\                                               
-                       \/_/    \/_/                                               
 
+<div align="center">
+<pre>
+<img src="https://raw.githubusercontent.com/mupplelabs/mupplelabs.github.io/refs/heads/main/images/mupplelabs.svg" style="width:70%; height:auto;">
 </pre>
 </div>
 <p>Doing many mistakes in many different areas.</p>
