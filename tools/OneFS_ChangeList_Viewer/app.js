@@ -441,6 +441,29 @@ function renderDashboard() {
     // 6. User Flags Breakdown (individual bits)
     const flagCounts = {};
 
+    // 7. Time-based Aggregations (atime, ctime, mtime, btime)
+    const timeFields = ['atime', 'ctime', 'mtime', 'btime'];
+    const timeStats = {}; 
+    timeFields.forEach(f => {
+        timeStats[f] = {
+            count: { '< 24h': 0, '1-7d': 0, '7-30d': 0, '30-90d': 0, '90d+': 0 },
+            capacity: { '< 24h': 0, '1-7d': 0, '7-30d': 0, '30-90d': 0, '90d+': 0 }
+        };
+    });
+
+    const now = Math.floor(Date.now() / 1000);
+    const DAY = 86400;
+
+    function getTimeBucket(ts) {
+        if (!ts || !ts.sec) return null;
+        const diff = now - ts.sec;
+        if (diff < DAY) return '< 24h';
+        if (diff < DAY * 7) return '1-7d';
+        if (diff < DAY * 30) return '7-30d';
+        if (diff < DAY * 90) return '30-90d';
+        return '90d+';
+    }
+
     filteredEntries.forEach(e => {
         // Change Types
         (e.change_types || []).forEach(ct => {
@@ -474,13 +497,32 @@ function renderDashboard() {
                 flagCounts[f] = (flagCounts[f] || 0) + 1;
             });
         }
+
+        // Time-based Aggregations
+        timeFields.forEach(f => {
+            const bucket = getTimeBucket(e[f]);
+            if (bucket) {
+                timeStats[f].count[bucket]++;
+                timeStats[f].capacity[bucket] += size;
+            }
+        });
     });
 
     // Helper to generate HTML for a chart card
-    function buildChartCard(title, dataObj, maxItems = 10, useBadgeColors = false) {
-        // Sort descending
-        const sorted = Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
-        const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
+    function buildChartCard(title, dataObj, maxItems = 10, useBadgeColors = false, isCapacity = false) {
+        // Sort specifically for time buckets if they are exactly our defined keys
+        const timeOrder = ['< 24h', '1-7d', '7-30d', '30-90d', '90d+'];
+        let sorted;
+        const keys = Object.keys(dataObj);
+        const isTimeChart = keys.every(k => timeOrder.includes(k));
+
+        if (isTimeChart) {
+            sorted = timeOrder.filter(k => dataObj[k] !== undefined).map(k => [k, dataObj[k]]);
+        } else {
+            sorted = Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
+        }
+
+        const maxVal = sorted.length > 0 ? Math.max(...sorted.map(s => s[1])) : 1;
 
         if (sorted.length === 0) return ''; // Don't show empty charts
 
@@ -511,7 +553,7 @@ function renderDashboard() {
                 <div class="bar-row">
                     <div class="bar-label-area">
                         <span class="bar-label" title="${displayLabel}">${displayLabel}</span>
-                        <span class="bar-value">${val}</span>
+                        <span class="bar-value">${isCapacity ? formatSize(val) : val}</span>
                     </div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width: ${pct}%; background: ${colorVar};"></div>
@@ -529,6 +571,29 @@ function renderDashboard() {
     container.innerHTML += buildChartCard('Data Pool Distribution', poolCounts, 10);
     container.innerHTML += buildChartCard('User Flags Breakdown', flagCounts, 15);
     container.innerHTML += buildChartCard('Top Churned Directories', dirCounts, 10);
+
+    // 7. Time-based Charts
+    container.innerHTML += `
+        <div style="grid-column: 1 / -1; margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+            <h2 style="font-size: 1rem; color: var(--text-secondary); text-transform: uppercase;">Time-Based Analysis: Capacity</h2>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Total size distribution across time headers.</p>
+        </div>
+    `;
+    container.innerHTML += buildChartCard('Capacity by Access (atime)', timeStats.atime.capacity, 5, false, true);
+    container.innerHTML += buildChartCard('Capacity by Modification (mtime)', timeStats.mtime.capacity, 5, false, true);
+    container.innerHTML += buildChartCard('Capacity by Change (ctime)', timeStats.ctime.capacity, 5, false, true);
+    container.innerHTML += buildChartCard('Capacity by Birth (btime)', timeStats.btime.capacity, 5, false, true);
+
+    container.innerHTML += `
+        <div style="grid-column: 1 / -1; margin-top: 24px; padding-top: 16px; border-top: 2px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+            <h2 style="font-size: 1rem; color: var(--text-secondary); text-transform: uppercase;">Time-Based Analysis: File Count</h2>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Number of entries per time window.</p>
+        </div>
+    `;
+    container.innerHTML += buildChartCard('Files by Access (atime)', timeStats.atime.count, 5);
+    container.innerHTML += buildChartCard('Files by Modification (mtime)', timeStats.mtime.count, 5);
+    container.innerHTML += buildChartCard('Files by Change (ctime)', timeStats.ctime.count, 5);
+    container.innerHTML += buildChartCard('Files by Birth (btime)', timeStats.btime.count, 5);
 }
 
 // --- Initialization & Events ---
