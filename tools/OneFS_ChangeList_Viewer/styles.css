@@ -25,9 +25,9 @@
     --json-null: #569cd6;
     --icon-hover-bg: rgba(255, 255, 255, 0.1);
 
-    --btn-bg: #444444;
-    --btn-text: #ffffff;
     --btn-hover: #555555;
+    --explorer-width: 260px;
+    --details-width: 300px;
 }
 
 [data-theme="light"] {
@@ -107,8 +107,46 @@ header {
 .app-container {
     flex: 1;
     display: grid;
-    grid-template-columns: 260px 1fr 300px;
+    grid-template-columns: var(--explorer-width) 4px 1fr 4px var(--details-width);
     overflow: hidden;
+    transition: grid-template-columns 0.15s ease-out;
+}
+
+.app-container.explorer-hidden {
+    grid-template-columns: 0 0 1fr 4px var(--details-width);
+}
+
+.app-container.details-hidden {
+    grid-template-columns: var(--explorer-width) 4px 1fr 0 0;
+}
+
+.app-container.explorer-hidden.details-hidden {
+    grid-template-columns: 0 0 1fr 0 0;
+}
+
+.resizer {
+    width: 4px;
+    background: transparent;
+    cursor: col-resize;
+    z-index: 1000;
+    transition: background 0.2s;
+    position: relative;
+    user-select: none;
+    overflow: hidden; /* Hide the resizer when collapsed */
+}
+
+.resizer:hover, .resizer.dragging {
+    background: var(--accent-blue);
+}
+
+.resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+    z-index: 1;
 }
 
 aside {
@@ -117,6 +155,15 @@ aside {
     flex-direction: column;
     overflow: hidden;
     outline: none;
+    transition: width 0.15s ease-out, opacity 0.1s;
+}
+
+#explorerPanel.hidden, #detailsPanel.hidden {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 #explorerPanel {
@@ -162,6 +209,7 @@ main {
 
 table {
     width: 100%;
+    min-width: 800px; /* Ensure table has a minimum width to trigger scrollbar if needed */
     border-collapse: collapse;
     font-size: 0.8125rem;
 }
@@ -411,6 +459,11 @@ tr.virtual-spacer {
     background: var(--btn-hover);
 }
 
+.btn.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
 .btn-primary {
     background: var(--accent-blue);
 }
@@ -617,6 +670,10 @@ tr.virtual-spacer {
     .app-container {
         display: flex;
         position: relative;
+    }
+
+    .resizer {
+        display: none;
     }
 
     aside {
