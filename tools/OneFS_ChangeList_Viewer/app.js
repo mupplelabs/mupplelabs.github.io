@@ -799,6 +799,107 @@ document.getElementById('copyDetailsBtn').onclick = () => {
     });
 };
 
+function initResizers() {
+    const explorerResizer = document.getElementById('explorerResizer');
+    const detailsResizer = document.getElementById('detailsResizer');
+    const appContainer = document.querySelector('.app-container');
+
+    let isResizing = false;
+    let currentResizer = null;
+
+    const startResize = (e, resizer) => {
+        isResizing = true;
+        currentResizer = resizer;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault();
+    };
+
+    const stopResize = () => {
+        if (!isResizing) return;
+        isResizing = false;
+        if (currentResizer) currentResizer.classList.remove('dragging');
+        currentResizer = null;
+        document.body.style.cursor = '';
+    };
+
+    const onResize = (e) => {
+        if (!isResizing) return;
+
+        const containerRect = appContainer.getBoundingClientRect();
+        const mouseX = e.clientX;
+
+        if (currentResizer === explorerResizer) {
+            const newWidth = Math.max(150, Math.min(600, mouseX - containerRect.left));
+            document.documentElement.style.setProperty('--explorer-width', `${newWidth}px`);
+            localStorage.setItem('explorer-width', `${newWidth}px`);
+        } else if (currentResizer === detailsResizer) {
+            const newWidth = Math.max(200, Math.min(800, containerRect.right - mouseX));
+            document.documentElement.style.setProperty('--details-width', `${newWidth}px`);
+            localStorage.setItem('details-width', `${newWidth}px`);
+        }
+    };
+
+    explorerResizer.addEventListener('mousedown', (e) => startResize(e, explorerResizer));
+    detailsResizer.addEventListener('mousedown', (e) => startResize(e, detailsResizer));
+
+    window.addEventListener('mousemove', onResize);
+    window.addEventListener('mouseup', stopResize);
+}
+
+// Initialize resizers
+initResizers();
+
+function initToggles() {
+    const explorerBtn = document.getElementById('toggleExplorerBtn');
+    const detailsBtn = document.getElementById('toggleDetailsBtn');
+    const appContainer = document.querySelector('.app-container');
+    const explorerPanel = document.getElementById('explorerPanel');
+    const detailsPanel = document.getElementById('detailsPanel');
+
+    // Load saved widths
+    const savedExplorerWidth = localStorage.getItem('explorer-width');
+    const savedDetailsWidth = localStorage.getItem('details-width');
+    if (savedExplorerWidth) document.documentElement.style.setProperty('--explorer-width', savedExplorerWidth);
+    if (savedDetailsWidth) document.documentElement.style.setProperty('--details-width', savedDetailsWidth);
+
+    const togglePane = (paneId, btn, className) => {
+        const isHidden = appContainer.classList.toggle(className);
+        btn.classList.toggle('active', !isHidden);
+        const panel = document.getElementById(paneId);
+        panel.classList.toggle('hidden', isHidden);
+        localStorage.setItem(className, isHidden);
+        
+        // Trigger a virtual row refresh in case the table size changed significantly
+        if (typeof renderVirtualRows === 'function') {
+            window.requestAnimationFrame(() => renderVirtualRows());
+        }
+    };
+
+    explorerBtn.onclick = () => togglePane('explorerPanel', explorerBtn, 'explorer-hidden');
+    detailsBtn.onclick = () => togglePane('detailsPanel', detailsBtn, 'details-hidden');
+
+    // Load initial states
+    if (localStorage.getItem('explorer-hidden') === 'true') {
+        appContainer.classList.add('explorer-hidden');
+        explorerPanel.classList.add('hidden');
+        explorerBtn.classList.remove('active');
+    } else {
+        explorerBtn.classList.add('active');
+    }
+
+    if (localStorage.getItem('details-hidden') === 'true') {
+        appContainer.classList.add('details-hidden');
+        detailsPanel.classList.add('hidden');
+        detailsBtn.classList.remove('active');
+    } else {
+        detailsBtn.classList.add('active');
+    }
+}
+
+// Initialize toggles
+initToggles();
+
 document.getElementById('closeDetailsBtn').onclick = (e) => {
     e.stopPropagation();
     document.querySelector('main').focus();
@@ -807,4 +908,4 @@ document.getElementById('closeDetailsBtn').onclick = (e) => {
 // Start
 renderColumnDropdown();
 renderTable();
-console.log('OneFS Explorer v2 Ready');
+console.log('OneFS Explorer v2 Ready (v2.1 - Toggles & Resize)');
