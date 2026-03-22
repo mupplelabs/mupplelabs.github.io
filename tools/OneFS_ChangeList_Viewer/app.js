@@ -844,11 +844,20 @@ document.getElementById('exportBtn').onclick = () => {
 
 // Dashboard Toggles
 document.getElementById('dashboardBtn').onclick = () => {
-    document.getElementById('dashboardOverlay').classList.remove('hidden');
-    renderDashboard();
+    const overlay = document.getElementById('dashboardOverlay');
+    const btn = document.getElementById('dashboardBtn');
+    if (!overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+        btn.classList.remove('active');
+    } else {
+        overlay.classList.remove('hidden');
+        btn.classList.add('active');
+        renderDashboard();
+    }
 };
 document.getElementById('closeDashboardBtn').onclick = () => {
     document.getElementById('dashboardOverlay').classList.add('hidden');
+    document.getElementById('dashboardBtn').classList.remove('active');
 };
 
 document.getElementById('copyDetailsBtn').onclick = () => {
