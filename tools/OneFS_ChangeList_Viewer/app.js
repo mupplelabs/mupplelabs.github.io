@@ -8,6 +8,7 @@ let currentTheme = new URLSearchParams(window.location.search).get('theme') || '
 let demoDataUrl = new URLSearchParams(window.location.search).get('data_url') || 'large_changelist_demo.json';
 let sortColumn = 'path';
 let sortDirection = 'asc'; // 'asc' or 'desc'
+let enableMoveDetection = true;
 
 // initial theme setup
 if (currentTheme !== 'dark' && currentTheme !== 'light') {
@@ -703,20 +704,71 @@ async function streamParseJSON(reader, totalSize) {
     }
 }
 
-async function loadData(dataOrStream, totalSize) {
+async function fallbackReadFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                rawEntries = Array.isArray(data) ? data : (data.entries || []);
+                resolve();
+            } catch (err) {
+                reject(new Error('JSON parse error: ' + err.message));
+            }
+        };
+        reader.onerror = () => reject(new Error('File reading failed.'));
+        reader.onprogress = (e) => {
+            if (e.lengthComputable) {
+                updateLoadingProgress((e.loaded / e.total) * 100, 'Reading file...');
+            }
+        };
+        reader.readAsText(file);
+    });
+}
+
+async function loadData(input, totalSize) {
     showLoading(true, 'Initialising...');
     
-    if (dataOrStream instanceof ReadableStream) {
-        await streamParseJSON(dataOrStream.getReader(), totalSize);
-    } else {
-        rawEntries = Array.isArray(dataOrStream) ? dataOrStream : (dataOrStream.entries || []);
+    try {
+        if (input instanceof File || input instanceof Blob) {
+            const size = input.size;
+            // Prefer streaming for efficiency if supported
+            if (typeof input.stream === 'function') {
+                try {
+                    const stream = input.stream();
+                    // Robust check for stream-like object with getReader
+                    if (stream && typeof stream.getReader === 'function') {
+                        await streamParseJSON(stream.getReader(), size);
+                    } else {
+                        await fallbackReadFile(input);
+                    }
+                } catch (e) {
+                    console.warn('Stream processing failed, falling back to FileReader', e);
+                    await fallbackReadFile(input);
+                }
+            } else {
+                await fallbackReadFile(input);
+            }
+        } else if (input && typeof input.getReader === 'function') {
+            // It's a ReadableStream (like response.body)
+            await streamParseJSON(input.getReader(), totalSize);
+        } else if (input && typeof input.read === 'function') {
+            // It's already a reader
+            await streamParseJSON(input, totalSize);
+        } else {
+            // Plain object/array passed in
+            rawEntries = Array.isArray(input) ? input : (input.entries || []);
+        }
+    } catch (err) {
+        showLoading(false);
+        throw err;
     }
     
     updateLoadingProgress(90, 'Processing Move Detection...');
     // Small timeout to allow UI to show the 90% state
     await new Promise(r => setTimeout(r, 50));
     
-    processedEntries = detectMoves(rawEntries);
+    processedEntries = enableMoveDetection ? detectMoves(rawEntries) : [...rawEntries];
     
     // Reset filters and selection
     document.getElementById('tableSearch').value = '';
@@ -748,15 +800,32 @@ document.getElementById('demoBtn').onclick = async () => {
     }
 };
 
+document.getElementById('moveDetectionToggle').onchange = (e) => {
+    enableMoveDetection = e.target.checked;
+    if (rawEntries.length > 0) {
+        showLoading(true, 'Re-processing moves...');
+        setTimeout(() => {
+            processedEntries = enableMoveDetection ? detectMoves(rawEntries) : [...rawEntries];
+            applyFilters();
+            buildTree();
+            showLoading(false);
+        }, 10);
+    }
+};
+
 document.getElementById('fileInput').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
     try {
-        await loadData(file.stream(), file.size);
+        await loadData(file);
     } catch (err) {
         showLoading(false);
-        alert('Error parsing file: ' + err.message);
+        alert('Error loading file: ' + err.message);
+        console.error('File load error:', err);
+    } finally {
+        // Reset value so the same file can be selected again
+        e.target.value = '';
     }
 };
 
